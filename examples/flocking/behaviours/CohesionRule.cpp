@@ -31,7 +31,6 @@ Vector2f CohesionRule::computeForce(const std::vector<Boid*>& neighborhood, Boid
         pCM += iteration->getPosition();
         count++;
       }
-
     }
 
     pCM /= count;
@@ -42,6 +41,8 @@ Vector2f CohesionRule::computeForce(const std::vector<Boid*>& neighborhood, Boid
   {
     cohesionForce.zero();
   }
+
+  cohesionForce = cohesionForce.normalized();
 
   return cohesionForce;
 }
