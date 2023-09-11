@@ -9,26 +9,34 @@ Vector2f CohesionRule::computeForce(const std::vector<Boid*>& neighborhood, Boid
 
   // find center of mass
 
+  int count = 0;
+
   Vector2f pCM; // position of center mass
   Vector2f pos = boid->getPosition();
   float cohesionRadius = boid->getDetectionRadius();
   float size = neighborhood.size();
 
-  for(auto &iteration : neighborhood)
+
+  if(size > 0)
   {
-    pCM += iteration->getPosition();
-  }
+    for(auto &iteration : neighborhood)
+    {
+      Vector2f temp = boid->getPosition() - iteration->getPosition();
+      temp.x = pow(temp.x,2.0f);
+      temp.y = pow(temp.y,2.0f);
+      float tempSqrt = sqrt(temp.x + temp.y);
 
-  pCM /= size;
+      if(tempSqrt <= cohesionRadius)
+      {
+        pCM += iteration->getPosition();
+        count++;
+      }
 
-  Vector2f temp = pCM - pos;
-  temp.x = pow(temp.x, 2.0f);
-  temp.y = pow(temp.y, 2.0f);
-  float tempSqrt = sqrt(temp.x + temp.y);
+    }
 
-  if(tempSqrt <= cohesionRadius)
-  {
-    cohesionForce = (pCM - pos);// / cohesionRadius;
+    pCM /= count;
+    auto temp = pCM - pos;
+    cohesionForce = temp / cohesionRadius;
   }
   else
   {
