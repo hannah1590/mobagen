@@ -10,23 +10,32 @@ Vector2f AlignmentRule::computeForce(const std::vector<Boid*>& neighborhood, Boi
 
   Vector2f vel = boid->getVelocity();
   float alignmentRad = boid->getDetectionRadius();
-  float size = neighborhood.size();
+  int count = 0;
 
   for(auto &iterator : neighborhood)
   {
-    averageVelocity += iterator->getVelocity();
+    Vector2f temp = boid->getPosition() - iterator->getPosition();
+    temp.x = pow(temp.x,2.0f);
+    temp.y = pow(temp.y,2.0f);
+    float tempSqrt = sqrt(temp.x + temp.y);
+
+    if(tempSqrt <= alignmentRad)
+    {
+      averageVelocity += iterator->getVelocity();
+      count++;
+    }
   }
 
-  averageVelocity /= size;
+  averageVelocity += vel;
 
-  boid.
+  averageVelocity /= count + 1;
 
-  Vector2f temp = vel - averageVelocity;
+  Vector2f temp = averageVelocity - vel;
   temp.x = pow(temp.x,2.0f);
   temp.y = pow(temp.y,2.0f);
   float tempSqrt = sqrt(temp.x + temp.y);
 
-  if(alignmentRad != 0)
+  if(tempSqrt != 0)
   {
     averageVelocity = (averageVelocity / tempSqrt) * tempSqrt;
   }
@@ -35,5 +44,7 @@ Vector2f AlignmentRule::computeForce(const std::vector<Boid*>& neighborhood, Boi
     averageVelocity.zero();
   }
 
-  return Vector2f::normalized(averageVelocity);
+  averageVelocity = Vector2f::normalized(averageVelocity);
+
+  return averageVelocity;
 }

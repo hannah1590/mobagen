@@ -22,18 +22,18 @@ Vector2f CohesionRule::computeForce(const std::vector<Boid*>& neighborhood, Boid
   pCM /= size;
 
   Vector2f temp = pCM - pos;
-
   temp.x = pow(temp.x, 2.0f);
   temp.y = pow(temp.y, 2.0f);
   float tempSqrt = sqrt(temp.x + temp.y);
 
   if(tempSqrt <= cohesionRadius)
   {
-    cohesionForce = (pCM - pos) / cohesionRadius;
+    cohesionForce = (pCM - pos);// / cohesionRadius;
   }
   else
   {
     cohesionForce.zero();
   }
+
   return cohesionForce;
 }
