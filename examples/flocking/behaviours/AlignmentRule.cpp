@@ -14,6 +14,7 @@ Vector2f AlignmentRule::computeForce(const std::vector<Boid*>& neighborhood, Boi
 
   for(auto &iterator : neighborhood)
   {
+    // magnitude of distance between boid and iterator position
     Vector2f temp = boid->getPosition() - iterator->getPosition();
     temp.x = pow(temp.x,2.0f);
     temp.y = pow(temp.y,2.0f);
@@ -26,8 +27,8 @@ Vector2f AlignmentRule::computeForce(const std::vector<Boid*>& neighborhood, Boi
     }
   }
 
+  // adds boid's velocity to avg vel and count of agents
   averageVelocity += vel;
-
   averageVelocity /= count + 1;
 
   Vector2f temp = averageVelocity - vel;

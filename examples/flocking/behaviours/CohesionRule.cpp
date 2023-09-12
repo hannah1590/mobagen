@@ -21,11 +21,13 @@ Vector2f CohesionRule::computeForce(const std::vector<Boid*>& neighborhood, Boid
   {
     for(auto &iteration : neighborhood)
     {
+      // magnitude of the distance between boid and the current iteration
       Vector2f temp = boid->getPosition() - iteration->getPosition();
       temp.x = pow(temp.x,2.0f);
       temp.y = pow(temp.y,2.0f);
       float tempSqrt = sqrt(temp.x + temp.y);
 
+      // if distance is less than radius, add to pCM and add a count to number of neighbors
       if(tempSqrt <= cohesionRadius)
       {
         pCM += iteration->getPosition();
