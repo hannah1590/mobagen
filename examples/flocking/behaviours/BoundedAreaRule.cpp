@@ -14,20 +14,35 @@ Vector2f BoundedAreaRule::computeForce(const std::vector<Boid*>& neighborhood, B
 
   Point2D bounds = this->world->engine->window->size();
   Vector2f pos = boid->getPosition();
+  Vector2f vel = boid->getVelocity();
 
   // distance between position of boid and screen bounds separated in x and y
-  Vector2f temp = Vector2f(pos.x - bounds.x,pos.y - pos.y);
 
-  if((pos.x < desiredDistance || temp.x > desiredDistance) || (pos.y < desiredDistance || temp.y > desiredDistance))
-  {
-    force = temp;
-  }
-  else
-  {
-    force = Vector2f::zero();
-  }
+  int factor = 100000;
 
-  force = force.normalized();
+  if(pos.x < desiredDistance)
+  {
+    force.x = vel.x + factor;
+  }
+  if(pos.x > bounds.x - desiredDistance)
+  {
+    force.x = vel.x - factor;
+  }
+  if(pos.y < desiredDistance)
+  {
+    force.y = vel.y + factor;
+  }
+  if(pos.y > bounds.y - desiredDistance)
+  {
+    force.y = vel.y - factor;
+  }
+  //else
+  //{
+  //  force = Vector2f::zero();
+  //}
+
+
+  //force = force.normalized();
   return force;
 }
 
