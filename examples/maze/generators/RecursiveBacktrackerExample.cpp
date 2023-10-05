@@ -62,7 +62,10 @@ bool RecursiveBacktrackerExample::Step(World* w) {
     stack.pop_back();
   }
 
-  return true;
+  if(!stack.empty())
+    return true;
+  else
+    return false;
 }
 
 void RecursiveBacktrackerExample::Clear(World* world) {
