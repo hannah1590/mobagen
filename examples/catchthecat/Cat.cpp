@@ -10,8 +10,7 @@ Point2D Cat::Move(World* world) {
   distances.emplace_back(size - pos.y, 'S'); // distance from south
   distances.emplace_back(size - pos.x, 'E'); // distance from east
   distances.emplace_back(size + pos.x, 'W'); // distance from west
-  std::string direction;
-  auto holder = distances[0];
+  std::pair<int,char> holder;
 
   // sort vector from smallest to biggest
   for(int i = 0; i < distances.size(); i++)
@@ -26,62 +25,101 @@ Point2D Cat::Move(World* world) {
       }
     }
   }
-  
-  direction = distances[0].second; // have cat go lowest distance direction
-  for(int i = 1; i < distances.size(); i++)
+
+  std::vector<Point2D> neighbors = world->neighbors(pos);
+  std::vector<std::pair<Point2D,std::string>> validNeighbors;
+
+  for(int i = 0; i < neighbors.size(); i++)
   {
-    if(distances[0].first == distances[i].first) // add directions that are equal to lowest distance direction
-      direction += distances[i].second;
+    if(!world->getContent(neighbors[i]))
+    {
+      if(world->NE(pos) == neighbors[i])
+        validNeighbors.emplace_back(neighbors[i], "NE");
+      if(world->NW(pos) == neighbors[i])
+        validNeighbors.emplace_back(neighbors[i], "NW");
+      if(world->E(pos) == neighbors[i])
+      {
+        if(distances['N'] > distances['S'] && (!world->getContent(world->SE(pos)) || !world->getContent(world->SW(pos))))
+          validNeighbors.emplace_back(neighbors[i], "ES");
+        else
+          validNeighbors.emplace_back(neighbors[i], "EN");
+      }
+      if(world->W(pos) == neighbors[i])
+      {
+        if(distances['N'] > distances['S'] && (!world->getContent(world->SE(pos)) || !world->getContent(world->SW(pos))))
+          validNeighbors.emplace_back(neighbors[i], "WS");
+        else
+          validNeighbors.emplace_back(neighbors[i], "WN");
+      }
+      if(world->SE(pos) == neighbors[i])
+        validNeighbors.emplace_back(neighbors[i], "SE");
+      if(world->SW(pos) == neighbors[i])
+        validNeighbors.emplace_back(neighbors[i], "SW");
+    }
   }
 
+  if(validNeighbors.size() == 1)
+  {
+    return validNeighbors.front().first;
+  }
+  else if(validNeighbors.empty())
+    return pos;
+
+  std::vector<std::pair<Point2D,std::string>> holderVector = validNeighbors;
+
+  int index = 0;
+  int rand;
+  while(true)
+  {
+    if(index >= distances.size())
+      return pos; // check
+
+    if (!holderVector.empty()) {
+      if(holderVector.size() > 1)
+        rand = Random::Range(0, holderVector.size() - 1);
+      else
+        rand = 0;
+
+      if(rand >= holderVector.size())
+        rand = 0; // check
+
+      if (distances[index].second == holderVector[rand].second[0] || distances[index].second == holderVector[rand].second[1]) {
+        if(world->catCanMoveToPosition(holderVector[rand].first))
+          return holderVector[rand].first;
+      }
+      else {
+        std::swap(holderVector[rand], holderVector.back());
+        holderVector.pop_back();
+      }
+    }
+    else {
+      holderVector = validNeighbors;
+      index++;
+    }
+  }
+
+
+/*
+  auto pos = world->getCat();
+
   while(true) {
-    auto rand = Random::Range(0, 5);
+    auto rand = Random::Range(0,5);
     switch (rand) {
       case 0:
-        // only moves
-        if (!world->getContent(World::NE(pos)) && (direction.contains('N') || (!direction.contains('E') && direction.contains('N')))) {
-          if(world->catCanMoveToPosition(World::NE(pos)))
-            return World::NE(pos);
-          direction += "SW";
-        }
-        break;
+        if(!world->getContent(World::NE(pos))) return World::NE(pos);
       case 1:
-        if (!world->getContent(World::NW(pos)) && (direction.contains('N') || (!direction.contains('W') && direction.contains('N')))) {
-          if(world->catCanMoveToPosition(World::NW(pos)))
-            return World::NW(pos);
-          direction += "SE";
-        }
-        break;
+        if(!world->getContent(World::NW(pos))) return World::NW(pos);
       case 2:
-        if (!world->getContent(World::E(pos)) && direction.contains('E')) {
-          if(world->catCanMoveToPosition(World::E(pos)))
-            return World::E(pos);
-          direction += "NSW";
-        }
-        break;
+        if(!world->getContent(World::E(pos))) return World::E(pos);
       case 3:
-        if (!world->getContent(World::W(pos)) && direction.contains('W')) {
-          if(world->catCanMoveToPosition(World::W(pos)))
-            return World::W(pos);
-          direction += "NSE";
-        }
-        break;
+        if(!world->getContent(World::W(pos))) return World::W(pos);
       case 4:
-        if (!world->getContent(World::SW(pos)) && (direction.contains('S') || (!direction.contains('W') && direction.contains('S')))) {
-          if(world->catCanMoveToPosition(World::SW(pos)))
-            return World::SW(pos);
-          direction += "NE";
-        }
-        break;
+        if(!world->getContent(World::SE(pos))) return World::SE(pos);
       case 5:
-        if (!world->getContent(World::SE(pos)) && (direction.contains('S') || (!direction.contains('E') && direction.contains('S')))) {
-          if(world->catCanMoveToPosition(World::SE(pos)))
-            return World::SE(pos);
-          direction += "NW";
-        }
-        break;
+        if(!world->getContent(World::SW(pos))) return World::SW(pos);
       default:
         throw "random out of range";
     }
   }
+  */
 }
