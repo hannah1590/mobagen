@@ -16,6 +16,7 @@ std::vector<Point2D> Agent::generatePath(World* w){
   frontierSet.insert(catPos);
   Point2D borderExit = Point2D::INFINITE; // if at the end of the loop we dont find a border, we have to return random points
 
+  vector<Point2D> path;
   while (!frontier.empty()){
     // get the current from frontier
     // remove the current from frontierset
@@ -25,8 +26,33 @@ std::vector<Point2D> Agent::generatePath(World* w){
       // for every neighbor set the cameFrom
       // enqueue the neighbors to frontier and frontierset
     // do this up to find a visitable border and break the loop
-  }
 
+    Point2D current = frontier.front();
+    frontierSet.erase(current);
+    frontier.pop();
+    visited.emplace(current, true);
+
+    vector<Point2D> neighbors = w->neighbors(current);
+    for(int i = 0; i < neighbors.size(); i++)
+    {
+      if(!w->getContent(neighbors[i]) && neighbors[i] != catPos && !frontierSet.contains(neighbors[i]))
+      {
+        cameFrom[neighbors[i]] = current;
+        frontier.push(neighbors[i]);
+        frontierSet.insert(neighbors[i]);
+      }
+    }
+
+    if(!w->isValidPosition(current))
+    {
+      while(!frontier.empty()) {
+        frontier.pop();
+        current = frontier.front();
+        path.push_back(cameFrom.at(current));
+      }
+    }
+  }
+return path;
   // if the border is not infinity, build the path from border to the cat using the camefrom map
   // if there isnt a reachable border, just return empty vector
   // if your vector is filled from the border to the cat, the first element is the catcher move, and the last element is the cat move

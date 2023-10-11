@@ -30,8 +30,9 @@ Point2D Catcher::Move(World* world) {
 
   for(int i = 0; i < neighbors.size(); i++)
   {
-    if(!world->getContent(neighbors[i]))
+    if(!world->getContent(neighbors[i])) // checks if current neighbor is a free space
     {
+      // adds the neighbor to the valid neighbors vector with a string providing the best directions to go in
       if(world->NE(pos) == neighbors[i])
         validNeighbors.emplace_back(neighbors[i], "NE");
       if(world->NW(pos) == neighbors[i])
@@ -64,14 +65,14 @@ Point2D Catcher::Move(World* world) {
   else if(validNeighbors.empty())
     return pos;
 
-  std::vector<std::pair<Point2D,std::string>> holderVector = validNeighbors;
+  std::vector<std::pair<Point2D,std::string>> holderVector = validNeighbors; // used to search through random neighbors
 
-  int index = 0;
+  int index = 0; // used to check the distances vector from smallest to largest
   int rand;
   while(true)
   {
     if(index >= distances.size())
-      return pos; // check
+      return pos; // prevents infinite loop
 
     if (!holderVector.empty()) {
       if(holderVector.size() > 1)
@@ -80,20 +81,21 @@ Point2D Catcher::Move(World* world) {
         rand = 0;
 
       if(rand >= holderVector.size())
-        rand = 0; // check
+        rand = 0; // check to make sure it works
 
+      // only moves in the direction of the random neighbor if its string matches the current index of distances
       if (distances[index].second == holderVector[rand].second[0] || distances[index].second == holderVector[rand].second[1]) {
-        if(world->catCanMoveToPosition(holderVector[rand].first))
+        if(world->catCanMoveToPosition(holderVector[rand].first)) // check to make sure it is valid
           return holderVector[rand].first;
       }
       else {
-        std::swap(holderVector[rand], holderVector.back());
-        holderVector.pop_back();
+        std::swap(holderVector[rand], holderVector.back()); // if direction doesn't fit swap the random with the back
+        holderVector.pop_back(); // remove the back vector
       }
     }
     else {
-      holderVector = validNeighbors;
-      index++;
+      holderVector = validNeighbors; // reset holderVector
+      index++; // increases index to check for next closest distance
     }
   }
 }
