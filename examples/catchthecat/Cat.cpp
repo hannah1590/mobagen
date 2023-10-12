@@ -3,6 +3,7 @@
 #include <stdexcept>
 
 Point2D Cat::Move(World* world) {
+
   auto pos = world->getCat();
   int size = world->getWorldSideSize() / 2;
   std::vector<std::pair<int, char>> distances;
@@ -99,4 +100,6 @@ Point2D Cat::Move(World* world) {
       index++; // increases index to check for next closest distance
     }
   }
+
+  //return generatePath(world).back();
 }
