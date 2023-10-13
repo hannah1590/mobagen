@@ -27,6 +27,7 @@ private:
   // false means empty
   // true means blocked
   std::vector<bool> worldState;
+  std::vector<bool> path;//trying my best here tbh
 
   // size of the side of the map
   int sideSize = 0;

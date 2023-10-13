@@ -4,14 +4,15 @@
 #include <queue>
 #include "World.h"
 using namespace std;
-vector<pair<Point2D,string>> getValidNeighbors(Point2D pos, World* world)
+
+vector<pair<Point2D,string>> getValidNeighbors(Point2D pos, World* world, vector<pair<int, char>>& distances)
 {
   vector<Point2D> neighbors = world->neighbors(pos);
   vector<pair<Point2D,string>> validNeighbors;
 
   for(int i = 0; i < neighbors.size(); i++)
   {
-    if(!world->getContent(neighbors[i])) // checks if current neighbor is a free space
+    if(!world->getContent(neighbors[i]) && neighbors[i] != pos) // checks if current neighbor is a free space
     {
       // adds the neighbor to the valid neighbors vector with a string providing the best directions to go in
       if(world->NE(pos) == neighbors[i])
@@ -19,18 +20,29 @@ vector<pair<Point2D,string>> getValidNeighbors(Point2D pos, World* world)
       if(world->NW(pos) == neighbors[i])
         validNeighbors.emplace_back(neighbors[i], "NW");
       if(world->E(pos) == neighbors[i])
-          validNeighbors.emplace_back(neighbors[i], "EE");
+      {
+        if(distances['N'] > distances['S'] && (!world->getContent(world->SE(pos)) || !world->getContent(world->SW(pos))))
+          validNeighbors.emplace_back(neighbors[i], "ES");
+        else
+          validNeighbors.emplace_back(neighbors[i], "EN");
+      }
       if(world->W(pos) == neighbors[i])
-          validNeighbors.emplace_back(neighbors[i], "WW");
-      if(world->SE(pos) == neighbors[i])
+      {
+        if(distances['N'] > distances['S'] && (!world->getContent(world->SE(pos)) || !world->getContent(world->SW(pos))))
+          validNeighbors.emplace_back(neighbors[i], "WS");
+        else
+          validNeighbors.emplace_back(neighbors[i], "WN");
+      }
         validNeighbors.emplace_back(neighbors[i], "SE");
       if(world->SW(pos) == neighbors[i])
         validNeighbors.emplace_back(neighbors[i], "SW");
     }
   }
+
+  return validNeighbors;
 }
 
-std::vector<std::pair<int, char>> getCosts(Point2D current, World* w)
+std::vector<std::pair<int, char>> getDistances(Point2D current, World* w)
 {
   int size = w->getWorldSideSize() / 2;
   std::vector<std::pair<int, char>> distances;
@@ -38,8 +50,8 @@ std::vector<std::pair<int, char>> getCosts(Point2D current, World* w)
   distances.emplace_back(size - current.y, 'S'); // distance from south
   distances.emplace_back(size - current.x, 'E'); // distance from east
   distances.emplace_back(size + current.x, 'W'); // distance from west
-
   // sort vector from smallest to biggest
+
   std::pair<int,char> holder;
   for(int i = 0; i < distances.size(); i++)
   {
@@ -53,78 +65,96 @@ std::vector<std::pair<int, char>> getCosts(Point2D current, World* w)
       }
     }
   }
+
   return distances;
 }
 
-std::vector<Point2D> Agent::generatePath(World* w){
-  unordered_map<Point2D, Point2D> cameFrom; // to build the flowfield and build the path
-  queue<Point2D> frontier; // to store next ones to visit
-  unordered_set<Point2D> frontierSet; // OPTIMIZATION to check faster if a point is in the queue
-  unordered_map<Point2D, bool> visited; // use .at() to get data, if the element dont exist [] will give you wrong results
+// used to hold cell data
+struct Node
+{
+  Point2D pos;
+  int cost;
+  int costToBorder;
 
-  // bootstrap state
+  bool operator>(const Node& other) const
+  {
+    // used to order the priority queue by lowest cost
+    return cost + costToBorder > other.cost + other.costToBorder;
+  }
+};
+
+vector<Point2D> Agent::generatePath(World* w) {
+
   auto catPos = w->getCat();
-  frontier.push(catPos);
-  frontierSet.insert(catPos);
-  Point2D borderExit = Point2D::INFINITE; // if at the end of the loop we dont find a border, we have to return random points
+  Point2D borderExit = Point2D::INFINITE;
 
-  visited.at(catPos) = true;
-  vector<Point2D> path;
+  priority_queue<Node, vector<Node>, greater<Node>> frontier; // puts nodes in a queue from low cost to high cost
+  unordered_set<Point2D> frontierSet;
+  unordered_map<Point2D, Point2D> cameFrom;
 
-  while (!frontier.empty()) {
-    // get the current from frontier
-    // remove the current from frontierset
-    // mark current as visited
-    // getVisitableNeightbors(world, current) returns a vector of neighbors that are not visited, not cat, not block, not in the queue
-    // iterate over the neighs:
-    // for every neighbor set the cameFrom
-    // enqueue the neighbors to frontier and frontierset
-    // do this up to find a visitable border and break the loop
+  std::vector<std::pair<int, char>> initialDistance = getDistances(catPos,w);
+  Node origin(catPos, 0,initialDistance[0].first);
+  frontier.push(origin);
+  cameFrom[catPos] = catPos;
 
-    Point2D current = frontier.front();
+  while (!frontier.empty())
+  {
+    Node current = frontier.top();
     frontier.pop();
 
-    if(w->catWinsOnSpace(current))
-      break;
+    frontierSet.insert(current.pos);
 
-    vector<pair<Point2D,string>> neighbors = getValidNeighbors(current, w);
-
-    for(int i = 0; i < neighbors.size(); i++)
+    if (w->catWinsOnSpace(current.pos))
     {
-      if(!visited.at(neighbors[i].first))
+      borderExit = current.pos;
+      break;
+    }
+
+    std::vector<std::pair<int, char>> distances = getDistances(current.pos,w);
+    vector<pair<Point2D,string>> neighbors = getValidNeighbors(current.pos,w,distances);
+
+    for (auto it : neighbors)
+    {
+      if (frontierSet.find(it.first) == frontierSet.end()) // checks if neighbor is in frontierSet
       {
-        frontier.push(current);
-        frontierSet.insert(current);
-        visited.at(current) = true;
+        int newCost = current.cost + 1; // costs 1 to move to next space
+
+        int costToBorder;
+        if(distances[it.second[0]].first > distances[it.second[1]].first) // check which direction of the neighbor is shortest
+        {
+          costToBorder = distances[it.second[0]].first; // gets shortest distance of neighbor from border
+        }
+        else
+        {
+          costToBorder = distances[it.second[1]].first;
+        }
+
+        // checks if neighbor is already in cameFrom and if the new cost is less than the current cost
+        if (cameFrom.find(it.first) == cameFrom.end() || newCost + costToBorder < current.cost + current.costToBorder)
+        {
+          Node newPath(it.first, newCost, costToBorder);
+          frontier.push(newPath);
+          cameFrom[it.first] = current.pos;
+        }
       }
     }
   }
-    //Point2D current = frontier.front();
-    //frontierSet.erase(current);
-    //frontier.pop();
-    //visited.emplace(current, true);
 
-    //vector<Point2D> neighbors = w->neighbors(current);
-    //for(int i = 0; i < neighbors.size(); i++)
-    //{
-   //   if(!w->getContent(neighbors[i]) && neighbors[i] != catPos && !frontierSet.contains(neighbors[i]))
-    //  {
-    //    cameFrom[neighbors[i]] = current;
-    //    frontier.push(neighbors[i]);
-   //     frontierSet.insert(neighbors[i]);
-   //   }
-   // }
+  // no path was found
+  if (borderExit == Point2D::INFINITE)
+  {
+    return vector<Point2D>();
+  }
 
-    //if(!w->isValidPosition(current))
-    //{
-    //  while(!frontier.empty()) {
-    //    frontier.pop();
-    //    current = frontier.front();
-    //    path.push_back(cameFrom.at(current));
-    //  }
-    //}
-return path;
-  // if the border is not infinity, build the path from border to the cat using the camefrom map
-  // if there isnt a reachable border, just return empty vector
-  // if your vector is filled from the border to the cat, the first element is the catcher move, and the last element is the cat move
+  // gets path from cameFrom
+  vector<Point2D> path;
+  Point2D current = borderExit;
+  while (current != catPos)
+  {
+    path.push_back(current);
+    current = cameFrom[current];
+  }
+  path.push_back(catPos);
+
+  return path;
 }

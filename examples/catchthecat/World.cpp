@@ -38,6 +38,10 @@ World::~World() {
 }
 
 void World::clearWorld() {
+  path.clear();
+  path.resize(sideSize * sideSize);
+  for (auto&& i : path) i = false;
+
   worldState.clear();
   worldState.resize(sideSize * sideSize);
   for (auto&& i : worldState) i = false;
@@ -102,6 +106,8 @@ void World::OnDraw(SDL_Renderer* renderer) {
       hex.Draw(renderer, t, Color::Red);
     else if (worldState[i])
       hex.Draw(renderer, t, Color::Blue);
+    else if(path[i])
+      hex.Draw(renderer, t, Color::Green);
     else
       hex.Draw(renderer, t, Color::Gray);
     i++;
@@ -192,19 +198,29 @@ void World::step() {
 
   // run the turn
   if (catTurn) {
+    for (auto&& i : path) i = false;
+
     auto move = cat->Move(this);
+    auto catPath = cat->generatePath(this);
     if (catCanMoveToPosition(move)) {
       catPosition = move;
       catWon = catWinVerification();
+      for(auto i : catPath)
+        path[(i.y + sideSize / 2) * (sideSize) + i.x + sideSize / 2] = true;
     } else {
       isSimulating = false;
       catcherWon = true;  // cat made a bad move
     }
   } else {
+    for (auto&& i : path) i = false;
+
     auto move = catcher->Move(this);
+    auto catPath = cat->generatePath(this);
     if (catcherCanMoveToPosition(move)) {
       worldState[(move.y + sideSize / 2) * (sideSize) + move.x + sideSize / 2] = true;
       catcherWon = catcherWinVerification();
+      for(auto i : catPath)
+        path[(i.y + sideSize / 2) * (sideSize) + i.x + sideSize / 2] = true;
     } else {
       isSimulating = false;
       catWon = true;  // catcher made a bad move
