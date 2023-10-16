@@ -9,6 +9,6 @@ Point2D Catcher::Move(World* world) {
   }
   else
   {
-    return path[path.size() - 2];
+    return path.front();
   }
 }
