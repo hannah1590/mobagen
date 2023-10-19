@@ -120,7 +120,7 @@ vector<Point2D> Agent::generatePath(World* w) {
         int newCost = current.cost + 1; // costs 1 to move to next space
 
         int costToBorder;
-        if(distances[it.second[0]].first > distances[it.second[1]].first) // check which direction of the neighbor is shortest
+        if(distances[it.second[0]].first < distances[it.second[1]].first) // check which direction of the neighbor is shortest
         {
           costToBorder = distances[it.second[0]].first; // gets shortest distance of neighbor from border
         }
