@@ -1,3 +1,45 @@
+## [1.14.6](https://github.com/InfiniBrains/mobagen/compare/v1.14.5...v1.14.6) (2024-06-12)
+
+
+### Bug Fixes
+
+* **timer:** add timer class ([bb62d7f](https://github.com/InfiniBrains/mobagen/commit/bb62d7fb614e260c1695ef9161d4334d520fb0b7))
+
+## [1.14.5](https://github.com/InfiniBrains/mobagen/compare/v1.14.4...v1.14.5) (2024-06-11)
+
+
+### Bug Fixes
+
+* **editor:** add editor to the build system ([e749508](https://github.com/InfiniBrains/mobagen/commit/e74950897ccf56d2facb7bee138178c548c2b5e2))
+
+## [1.14.4](https://github.com/InfiniBrains/mobagen/compare/v1.14.3...v1.14.4) (2024-06-11)
+
+
+### Bug Fixes
+
+* **style:** fix styles and remove previous solutions ([c01ad5b](https://github.com/InfiniBrains/mobagen/commit/c01ad5bb5a6e0c7817d17d71afff6dcb8c8797b5))
+
+## [1.14.3](https://github.com/InfiniBrains/mobagen/compare/v1.14.2...v1.14.3) (2024-06-11)
+
+
+### Bug Fixes
+
+* **ci:** fix api changes for ci to pass ([06bdc7b](https://github.com/InfiniBrains/mobagen/commit/06bdc7b1db08309237100cbacb053cec17dd4d39))
+
+## [1.14.2](https://github.com/InfiniBrains/mobagen/compare/v1.14.1...v1.14.2) (2024-06-11)
+
+
+### Bug Fixes
+
+* **ci:** fix api changes for ci ([e892a04](https://github.com/InfiniBrains/mobagen/commit/e892a047e9100c909f9b47e704e16d5edce7db19))
+
+## [1.14.1](https://github.com/InfiniBrains/mobagen/compare/v1.14.0...v1.14.1) (2024-06-11)
+
+
+### Bug Fixes
+
+* time manager ([71c06cd](https://github.com/InfiniBrains/mobagen/commit/71c06cd299bdd0e59ec183bf251ad50e576466e5))
+
 # [1.14.0](https://github.com/InfiniBrains/mobagen/compare/v1.13.10...v1.14.0) (2023-10-11)
 
 

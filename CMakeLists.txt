@@ -46,10 +46,12 @@ if(EMSCRIPTEN)
   set(ENABLE_TEST_COVERAGE OFF)
 endif()
 
+include(cmake/subdirlist.cmake)
+
 include(external/external.cmake)
 
+add_subdirectory(modules)
 add_subdirectory(core)
-add_subdirectory(editor)
 
 option(ENABLE_TEST_COVERAGE "ENABLE_TEST_COVERAGE" ON)
 if(ENABLE_TEST_COVERAGE)
@@ -64,6 +66,11 @@ endif()
 option(ENABLE_DOCUMENTATION "ENABLE_DOCUMENTATION" OFF)
 if(ENABLE_DOCUMENTATION)
   add_subdirectory(documentation)
+endif()
+
+option(ENABLE_EDITOR "ENABLE_EDITOR" ON)
+if(ENABLE_EDITOR)
+  add_subdirectory(editor)
 endif()
 
 CPMAddPackage(
